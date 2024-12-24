@@ -1,7 +1,8 @@
 'use strict'
 const t = require('tap')
 const startServer = require('../setup-server')
-const { Configuration, SecRunner } = require('@sectester/runner');
+const { Configuration } = require('@sectester/core');
+const { SecRunner } = require('@sectester/runner');
 const { TestType, Severity } = require('@sectester/scan');
 
 const configuration = new Configuration({ hostname: 'app.brightsec.com' });
