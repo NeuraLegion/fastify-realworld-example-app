@@ -28,5 +28,12 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Install sectester
+      run: |
+        npm i --save-dev @sectester/runner \
+          @sectester/core            \
+          @sectester/repeater        \
+          @sectester/reporter        \
+          @sectester/scan
     - name: Run SecTester tests
       run: npm test -- test/routes
