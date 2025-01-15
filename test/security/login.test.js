@@ -3,7 +3,7 @@ import { TestType } from '@sectester/scan';
 
 jest.setTimeout(15 * 60 * 1000); // 15 minutes
 
-describe('GET /tags', () => {
+describe('Login API Security Tests', () => {
   let runner!: SecRunner;
   let baseUrl!: string;
 
@@ -25,16 +25,19 @@ describe('GET /tags', () => {
 
   afterEach(() => runner.clear());
 
-  it('should not have excessive data exposure or insecure HTTP methods', async () => {
+  it('POST /api/users/login', async () => {
     await runner
       .createScan({
-        tests: [TestType.EXCESSIVE_DATA_EXPOSURE, TestType.HTTP_METHOD_FUZZING]
+        tests: [TestType.BRUTE_FORCE_LOGIN, TestType.CSRF, TestType.SQLI, TestType.XSS],
+        attackParamLocations: ["body", "query"]
       })
-      .threshold(Severity.MEDIUM)
-      .timeout(300000) // 5 minutes
+      .threshold("MEDIUM")
+      .timeout(15 * 60 * 1000)
       .run({
-        method: 'GET',
-        url: `${baseUrl}/tags`
+        method: 'POST',
+        url: `${baseUrl}/api/users/login`,
+        headers: { 'Content-Type': 'application/json' },
+        body: { user: { email: 'example@example.com', password: 'password123' } }
       });
   });
 });

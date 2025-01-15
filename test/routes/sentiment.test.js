@@ -3,9 +3,9 @@ import { TestType } from '@sectester/scan';
 
 jest.setTimeout(15 * 60 * 1000); // 15 minutes
 
-describe('GET /tags', () => {
-  let runner!: SecRunner;
-  let baseUrl!: string;
+describe('/sentiment', () => {
+  let runner;
+  let baseUrl = 'http://localhost:3000';
 
   beforeAll(async () => {
     // Setup application and get baseUrl
@@ -17,7 +17,7 @@ describe('GET /tags', () => {
 
   beforeEach(async () => {
     runner = new SecRunner({
-      // Config
+      hostname: 'app.neuralegion.com'
     });
 
     await runner.init();
@@ -25,16 +25,18 @@ describe('GET /tags', () => {
 
   afterEach(() => runner.clear());
 
-  it('should not have excessive data exposure or insecure HTTP methods', async () => {
+  it('POST /score', async () => {
     await runner
       .createScan({
-        tests: [TestType.EXCESSIVE_DATA_EXPOSURE, TestType.HTTP_METHOD_FUZZING]
+        tests: [TestType.CSRF, 'excessive_data_exposure', TestType.INSECURE_OUTPUT_HANDLING, TestType.XSS],
+        attackParamLocations: ['body']
       })
-      .threshold(Severity.MEDIUM)
-      .timeout(300000) // 5 minutes
+      .threshold('MEDIUM')
+      .timeout(300000)
       .run({
-        method: 'GET',
-        url: `${baseUrl}/tags`
+        method: 'POST',
+        url: `${baseUrl}/sentiment/score`,
+        body: { content: 'string' }
       });
   });
 });

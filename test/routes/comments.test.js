@@ -3,7 +3,7 @@ import { TestType } from '@sectester/scan';
 
 jest.setTimeout(15 * 60 * 1000); // 15 minutes
 
-describe('GET /tags', () => {
+describe('GET /articles/example-article/comments', () => {
   let runner!: SecRunner;
   let baseUrl!: string;
 
@@ -25,16 +25,24 @@ describe('GET /tags', () => {
 
   afterEach(() => runner.clear());
 
-  it('should not have excessive data exposure or insecure HTTP methods', async () => {
+  it('should pass security tests', async () => {
     await runner
       .createScan({
-        tests: [TestType.EXCESSIVE_DATA_EXPOSURE, TestType.HTTP_METHOD_FUZZING]
+        tests: [
+          TestType.BROKEN_ACCESS_CONTROL,
+          TestType.CSRF,
+          TestType.EXCESSIVE_DATA_EXPOSURE,
+          TestType.JWT
+        ]
       })
       .threshold(Severity.MEDIUM)
       .timeout(300000) // 5 minutes
       .run({
         method: 'GET',
-        url: `${baseUrl}/tags`
+        url: `${baseUrl}/articles/example-article/comments`,
+        headers: {
+          Authorization: 'Bearer <token>'
+        }
       });
   });
 });
