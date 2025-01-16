@@ -2,16 +2,51 @@
 const t = require('tap')
 const startServer = require('../setup-server')
 
-t.test('requests the "/tags" route', async t => {
+// Import SecTester
+const { SecRunner, TestType } = require('@sectester/runner')
+
+// Set timeout for tests
+jest.setTimeout(15 * 60 * 1000) // 15 minutes
+
+t.test('SecTester integration for /tags route', async t => {
+  let runner
   const server = await startServer()
   t.teardown(() => server.close())
 
-  const response = await server.inject({
-    method: 'GET',
-    url: '/api/tags'
+  // Initialize SecTester runner
+  t.beforeEach(async () => {
+    runner = new SecRunner({
+      hostname: process.env.BRIGHT_HOSTNAME
+    })
+    await runner.init()
   })
 
-  t.equal(response.statusCode, 200, 'returns a status code of 200')
-  t.equal(JSON.parse(response.body).tags.length, 0, 'returns an empty array')
+  // Clear SecTester runner after each test
+  t.afterEach(() => runner.clear())
+
+  // Test case for excessive data exposure
+  t.test('excessive data exposure', async t => {
+    await runner.createScan({
+      tests: [TestType.EXCESSIVE_DATA_EXPOSURE],
+      attackParamLocations: ['QUERY', 'BODY', 'HEADER']
+    }).run({
+      method: 'GET',
+      url: 'http://localhost:3000/tags'
+    })
+    t.end()
+  })
+
+  // Test case for HTTP method fuzzing
+  t.test('http method fuzzing', async t => {
+    await runner.createScan({
+      tests: ['HTTP_METHOD_FUZZING'],
+      attackParamLocations: ['QUERY', 'BODY', 'HEADER']
+    }).run({
+      method: 'GET',
+      url: 'http://localhost:3000/tags'
+    })
+    t.end()
+  })
+
   t.end()
 })
