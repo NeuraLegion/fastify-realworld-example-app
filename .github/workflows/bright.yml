@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      BRIGHT_HOSTNAME: ${{ vars.BRIGHT_HOSTNAME }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create .env file
+        run: npm run create:env
+
+      - name: Start application
+        run: npm start &
+        env:
+          PORT: 5000
+
+      - name: Wait for application to be ready
+        run: |
+          echo "Waiting for application to start..."
+          sleep 10
+
+      - name: Run tests
+        run: npx tap test/sec/*.test.js
+        env:
+          BRIGHT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRIGHT_TARGET_URL: http://localhost:5000
+          PR_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
