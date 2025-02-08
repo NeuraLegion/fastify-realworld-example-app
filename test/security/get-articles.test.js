@@ -24,8 +24,9 @@ t.afterEach(() => runner.clear());
 
 t.teardown(() => server.close());
 
+t.setTimeout(15 * 60 * 1000);
+
 t.test('GET /api/articles', async t => {
-  t.setTimeout(15 * 60 * 1000);
 
   const promise = runner
     .createScan({

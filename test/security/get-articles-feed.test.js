@@ -1,7 +1,7 @@
 'use strict'
 const t = require('tap')
 const { SecRunner, TestType, Severity, HttpMethod, AttackParamLocation } = require('@sectester/runner')
-const startServer = require('../../setup-server')
+const startServer = require('../setup-server')
 
 let runner;
 let server;
@@ -23,8 +23,9 @@ t.afterEach(() => runner.clear());
 
 t.teardown(() => server.close());
 
+t.setTimeout(15 * 60 * 1000);
+
 t.test('GET /api/articles/feed', async t => {
-  t.setTimeout(15 * 60 * 1000);
 
   const promise = runner
     .createScan({
