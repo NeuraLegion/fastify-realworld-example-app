@@ -39,7 +39,7 @@
     "fastify-plugin": "^4.3.0",
     "fluent-json-schema": "^3.1.0",
     "http-errors": "^2.0.0",
-    "knex": "^2.3.0",
+    "knex": "^2.4.0",
     "slug": "^8.2.2",
     "sqlite3": "^5.1.2"
   },
