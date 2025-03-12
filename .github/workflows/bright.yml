@@ -1,0 +1,56 @@
+name: Security Tests
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  security-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install SecTester
+      run: npm i --save-dev @sectester/core @sectester/repeater @sectester/scan @sectester/runner
+
+    - name: Copy .env.sample to .env
+      run: cp .env.sample .env
+
+    - name: Start application
+      run: npm run dev &
+
+    - name: Wait for application to be ready
+      run: |
+        for i in {1..30}; do
+          if nc -z localhost 5000; then
+            echo "Application is ready"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "Application did not start in time"
+        exit 1
+
+    - name: Run security tests
+      env:
+        BRIGHT_HOSTNAME: ${{ vars.BRIGHT_HOSTNAME }}
+        BRIGHT_PROJECT_ID: ${{ vars.BRIGHT_PROJECT_ID }}
+        BRIGHT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRIGHT_TARGET_URL: 'http://localhost:5000'
+      run: node --test .brightsec/tests/*.test.ts --test-concurrency=4
