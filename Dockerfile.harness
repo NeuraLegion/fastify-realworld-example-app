@@ -1,0 +1,17 @@
+FROM node:20-bookworm-slim
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+
+RUN npm install --omit=dev --no-audit --no-fund \
+ && npm cache clean --force
+
+COPY . /app
+
+ENV NODE_ENV=production \
+    PORT=3001
+
+EXPOSE 3001
+
+CMD ["node", "harness.js"]
